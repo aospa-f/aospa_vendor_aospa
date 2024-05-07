@@ -42,12 +42,13 @@ public class SystemPropertySwitchPreference extends SwitchPreferenceCompat {
 
     @Override
     protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
-        // This is what default TwoStatePreference implementation is doing without respecting
-        // real default value:
-        //setChecked(restoreValue ? getPersistedBoolean(mChecked)
-        //        : (Boolean) defaultValue);
-        // Instead, we better do
-        setChecked(restoreValue ? getPersistedBoolean((Boolean) defaultValue)
-                : (Boolean) defaultValue);
+        if (defaultValue != null) {
+            setChecked(restoreValue ? getPersistedBoolean((Boolean) defaultValue)
+                    : (Boolean) defaultValue);
+        } else {
+            // Handle the case where defaultValue is null
+            // You can set a default boolean value here or handle it according to your application's logic
+            setChecked(false); // For example, setting it to false as default
+        }
     }
 }
