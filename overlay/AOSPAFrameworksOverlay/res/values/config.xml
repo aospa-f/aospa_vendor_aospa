@@ -53,7 +53,14 @@
         <item>com.google.android.gms/com.google.android.gms.update.SystemUpdateService</item>
         <item>com.google.android.settings.intelligence/com.google.android.settings.intelligence.modules.batterywidget.impl.BatteryAppWidgetProvider</item>
         <item>com.google.android.settings.intelligence/com.google.android.settings.intelligence.modules.batterywidget.impl.BatteryWidgetPromoActivity</item>
+        <item>com.google.android.gms/com.google.android.gms.gp.gameservice.GameService</item>
+        <item>com.google.android.gms/com.google.android.gms.gp.gameservice.GameSessionService</item>
+        <item>com.google.android.gms/com.google.android.gms.gp.gameservice.SettingsActivity</item>
+        <item>com.google.android.apps.gaming.dashboard</item>
     </string-array>
+
+    <!-- The name of the package that will hold the game service role. -->
+    <string name="config_systemGameService" translatable="false"></string>
 
     <!-- Set this to true to enable the platform's auto-power-save modes like doze and
          app standby.  These are not enabled by default because they require a standard
