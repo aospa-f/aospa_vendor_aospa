@@ -56,7 +56,6 @@
         <item>com.google.android.gms/com.google.android.gms.gp.gameservice.GameService</item>
         <item>com.google.android.gms/com.google.android.gms.gp.gameservice.GameSessionService</item>
         <item>com.google.android.gms/com.google.android.gms.gp.gameservice.SettingsActivity</item>
-        <item>com.google.android.apps.gaming.dashboard</item>
     </string-array>
 
     <!-- The name of the package that will hold the game service role. -->
