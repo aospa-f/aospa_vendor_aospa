@@ -3,3 +3,5 @@
 
 # Pocket Judge
 /sys/kernel/pocket_judge(/.*)?	        u:object_r:pocket_judge_sysfs:s0
+/(system_ext|system/system_ext)/bin/ax_ram_plus_setup u:object_r:ax_ram_plus_exec:s0
+/data/system/axion_ram_plus(/.*)? u:object_r:ax_ram_plus_data_file:s0

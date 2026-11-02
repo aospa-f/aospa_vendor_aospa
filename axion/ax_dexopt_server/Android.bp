@@ -1,0 +1,12 @@
+package {
+    default_visibility: ["//visibility:public"],
+}
+
+filegroup {
+    name: "ax_dexopt_server_sources",
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
+    visibility: ["//frameworks/base/services/core"],
+}

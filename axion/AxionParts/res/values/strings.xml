@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Device manager</string>
+
+    <!-- Performance dashboard -->
+    <string name="performance">Device manager</string>
+    <string name="performance_summary">App optimisation, memory and kernel controls</string>
+
+    <string name="app_optimization_title">App optimisation</string>
+    <string name="app_optimization_summary">ODEX optimisation makes applications launch faster</string>
+    <string name="app_optimization_desc_idle">ODEX optimisation makes applications launch faster. The system automatically optimised while idle.</string>
+    <string name="app_optimization_desc_running">App Optimisation (ODEX Pre-compile) makes applications launch faster. Your device might get warm and lag during the process, but it will recover afterward.</string>
+    <string name="app_optimization_desc_done">ODEX optimisation makes applications launch faster. Manual optimisation complete.</string>
+    <string name="app_optimization_start">Start Optimisation</string>
+    <string name="app_optimization_optimizing">Optimising…</string>
+    <string name="app_optimization_completed">Optimisation complete</string>
+    <string name="app_optimization_no_apps">Nothing to optimise</string>
+    <string name="app_optimization_no_apps_summary">All applications are already optimised</string>
+    <string name="app_optimization_pending_apps">%1$d apps to optimise</string>
+
+    <string name="background_manager">Background Manager</string>
+    <string name="background_manager_summary">Manage app freezing and background start limits</string>
+    <string name="kernel_manager">Kernel Manager</string>
+    <string name="kernel_manager_summary">Tune CPU and GPU frequency limits</string>
+    <string name="ram_plus">RAM Plus</string>
+    <string name="ram_plus_summary">Extend available memory with internal storage</string>
+
+    <string name="ram_plus_configuration">Configuration</string>
+    <string name="ram_plus_size">RAM Plus size</string>
+    <string name="ram_plus_off">Off</string>
+    <string name="ram_plus_size_gb">%1$d GB</string>
+    <string name="ram_plus_status">Current status</string>
+    <string name="ram_plus_active_size">Active: %1$d GB</string>
+    <string name="ram_plus_restart_pending">Selected size will apply after restart</string>
+    <string name="ram_plus_unsupported">Not supported on this device</string>
+    <string name="ram_plus_encryption_required">Storage encryption is required</string>
+    <string name="ram_plus_zram_not_ready">Zram was not ready during setup</string>
+    <string name="ram_plus_insufficient_space">Not enough free storage</string>
+    <string name="ram_plus_priority_error">RAM Plus could not be placed after zram</string>
+    <string name="ram_plus_setup_failed">RAM Plus setup failed</string>
+    <string name="ram_plus_warning">RAM Plus uses storage-backed swap to keep more inactive apps available. Internal storage is slower than physical RAM and receives additional writes.</string>
+    <string name="ram_plus_restart_title">Restart required</string>
+    <string name="ram_plus_restart_message">Restart your device to apply the new RAM Plus size.</string>
+    <string name="ram_plus_restart_now">Restart</string>
+    <string name="ram_plus_restart_later">Later</string>
+
+    <string name="background_manager_policy">Policy</string>
+    <string name="background_manager_apps">Apps</string>
+    <string name="background_app_policy">App policy</string>
+    <string name="background_app_policy_summary">Choose how strictly background apps are handled</string>
+    <string name="background_app_policy_normal">Normal</string>
+    <string name="background_app_policy_aggressive">Aggressive</string>
+    <string name="freezer_level">Freezer level</string>
+    <string name="freezer_level_summary">Select how the background freezer should run</string>
+    <string name="freezer_level_disabled">Disabled</string>
+    <string name="freezer_level_process">Process freezer</string>
+    <string name="freezer_level_package">Package freezer</string>
+    <string name="package_freezer_apps">Package freezer apps</string>
+    <string name="package_freezer_apps_summary">Apps in this list can be frozen after moving to the background</string>
+    <string name="restricted_background_apps">Restricted background apps</string>
+    <string name="restricted_background_apps_summary">Apps in this list are blocked from background auto-starts until opened</string>
+
+    <string name="little_cluster">Little Cluster</string>
+    <string name="big_cluster">Big Cluster</string>
+    <string name="prime_cluster">Prime Cluster</string>
+    <string name="cpu_cluster">CPU Cluster %1$d</string>
+    <string name="minimum_frequency">Minimum Frequency</string>
+    <string name="maximum_frequency">Maximum Frequency</string>
+    <string name="cpu_governor">CPU governor</string>
+    <string name="gpu">GPU</string>
+    <string name="mhz_format">%1$d MHz</string>
+
+    <string name="disabled">Disabled</string>
+    <string name="no_apps_selected">No apps selected</string>
+    <string name="add_apps">Add apps</string>
+    <string name="select_apps">Select Apps</string>
+    <string name="search_apps">Search apps…</string>
+    <string name="selected_count">%1$d selected</string>
+    <string name="save">Save</string>
+
+    <plurals name="max_apps_selected">
+        <item quantity="one">You can select up to %1$d app</item>
+        <item quantity="other">You can select up to %1$d apps</item>
+    </plurals>
+</resources>

@@ -1,0 +1,125 @@
+/*
+ * Copyright (C) 2025-2026 AxionOS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.axion.compose.applist
+
+import android.content.ComponentName
+import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.State
+import androidx.compose.ui.platform.LocalContext
+import com.android.axion.util.PackageManagerUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+enum class AppFilter {
+    USER_ONLY,
+    SYSTEM_ONLY,
+    ALL,
+    NO_OVERLAYS,
+    LAUNCHABLE_ONLY,
+    INCLUDE_DUAL_APPS,
+}
+
+data class AppEntry(
+    val packageName: String,
+    val className: String,
+    val label: String,
+    val icon: Drawable,
+    val isSystem: Boolean,
+    val userId: Int = 0,
+    val isClone: Boolean = false,
+)
+
+@Composable
+fun rememberAppList(vararg filters: AppFilter): State<List<AppEntry>> {
+    val context = LocalContext.current
+    val pm = context.packageManager
+    val filterSet = filters.toSet()
+    val state = remember(filterSet) { mutableStateOf<List<AppEntry>>(emptyList()) }
+
+    LaunchedEffect(filterSet) {
+        withContext(Dispatchers.IO) {
+            val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+            val entries = apps.mapNotNull { info ->
+                val isSystem = info.flags and ApplicationInfo.FLAG_SYSTEM != 0
+
+                if (AppFilter.USER_ONLY in filterSet && isSystem) return@mapNotNull null
+                if (AppFilter.SYSTEM_ONLY in filterSet && !isSystem) return@mapNotNull null
+                if (AppFilter.NO_OVERLAYS in filterSet && info.isResourceOverlay) return@mapNotNull null
+                val launcherComponent = if (AppFilter.LAUNCHABLE_ONLY in filterSet) {
+                    getLauncherComponent(pm, info.packageName) ?: return@mapNotNull null
+                } else {
+                    PackageManagerUtils.getLaunchIntentForPackage(
+                        context,
+                        info.packageName,
+                    )?.component
+                }
+
+                val icon = PackageManagerUtils.loadApplicationIcon(pm, info)
+                    ?: return@mapNotNull null
+                val className = launcherComponent?.className ?: ""
+                AppEntry(
+                    packageName = info.packageName,
+                    className = className,
+                    label = PackageManagerUtils.loadApplicationLabel(pm, info).toString(),
+                    icon = icon,
+                    isSystem = isSystem,
+                    userId = 0,
+                    isClone = false,
+                )
+            }
+
+            state.value = entries.sortedBy { it.label.lowercase() }
+        }
+    }
+
+    return state
+}
+
+private fun getLauncherComponent(pm: PackageManager, packageName: String): ComponentName? {
+    val intent = Intent(Intent.ACTION_MAIN)
+        .addCategory(Intent.CATEGORY_LAUNCHER)
+        .setPackage(packageName)
+    val activity = pm.queryIntentActivities(intent, 0).firstOrNull()?.activityInfo
+        ?: return null
+    return ComponentName(activity.packageName, activity.name)
+}
+
+@Composable
+fun rememberFilteredAppList(query: String, vararg filters: AppFilter): State<List<AppEntry>> {
+    val allApps = rememberAppList(*filters)
+    return remember(query, allApps) {
+        derivedStateOf {
+            if (query.isBlank()) {
+                allApps.value
+            } else {
+                val lower = query.lowercase()
+                allApps.value.filter { entry ->
+                    entry.label.lowercase().contains(lower) ||
+                        entry.packageName.lowercase().contains(lower)
+                }
+            }
+        }
+    }
+}

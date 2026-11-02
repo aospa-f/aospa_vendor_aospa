@@ -1,0 +1,78 @@
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+android_library {
+    name: "AxionPartsLib",
+    manifest: "LibraryManifest.xml",
+
+    srcs: [
+        "src/**/*.kt",
+    ],
+    resource_dirs: ["res"],
+
+    platform_apis: true,
+    system_ext_specific: true,
+    use_resource_processor: true,
+
+    static_libs: [
+        "androidx.activity_activity-compose",
+        "androidx.core_core-ktx",
+        "androidx.appcompat_appcompat",
+        "com.google.android.material_material",
+        "androidx.compose.animation_animation",
+        "androidx.compose.animation_animation-core",
+        "androidx.compose.animation_animation-graphics",
+        "androidx.compose.foundation_foundation",
+        "androidx.compose.material3_material3",
+        "androidx.compose.material3_material3-window-size-class",
+        "androidx.compose.material_material-icons-core",
+        "androidx.compose.material_material-icons-extended",
+        "androidx.compose.runtime_runtime",
+        "androidx.compose.ui_ui",
+        "kotlinx-coroutines-core",
+        "ax_compose",
+    ],
+
+    kotlincflags: [
+        "-Xjvm-default=all",
+        "-opt-in=kotlin.RequiresOptIn",
+        "-P plugin:androidx.compose.compiler.plugins.kotlin:sourceInformation=true",
+    ],
+
+    visibility: ["//visibility:public"],
+}
+
+android_app {
+    name: "AxionParts",
+    manifest: "AndroidManifest.xml",
+
+    defaults: [
+        "platform_app_defaults",
+    ],
+
+    certificate: "platform",
+    platform_apis: true,
+    privileged: true,
+    system_ext_specific: true,
+
+    required: [
+        "privapp-permissions-axionparts",
+    ],
+
+    optimize: {
+        enabled: true,
+    },
+
+    static_libs: [
+        "AxionPartsLib",
+    ],
+}
+
+prebuilt_etc {
+    name: "privapp-permissions-axionparts",
+    system_ext_specific: true,
+    src: "privapp-permissions-axionparts.xml",
+    sub_dir: "permissions",
+    filename_from_src: true,
+}

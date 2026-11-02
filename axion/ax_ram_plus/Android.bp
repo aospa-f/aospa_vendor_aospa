@@ -1,0 +1,19 @@
+package {
+    default_visibility: ["//visibility:public"],
+}
+
+cc_binary {
+    name: "ax_ram_plus_setup",
+    srcs: ["ax_ram_plus_setup.cpp"],
+    shared_libs: [
+        "libbase",
+        "liblog",
+    ],
+    init_rc: ["init.axion.ramplus.rc"],
+    system_ext_specific: true,
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+    ],
+}

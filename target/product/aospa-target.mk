@@ -134,6 +134,17 @@ PRODUCT_PACKAGES += \
     ParanoidPapers \
     ParanoidSystemUI
 
+# Axion Device Manager
+PRODUCT_PACKAGES += \
+    AxionParts \
+    ax_ram_plus_setup
+
+PRODUCT_SYSTEM_EXT_PROPERTIES += \
+    persist.sys.ax_rp_supp=true \
+    persist.sys.ax_rp_size_mb=0 \
+    persist.sys.ax_rp_active_kb=0 \
+    persist.sys.ax_rp_status=disabled
+
 # Paranoid Hub (OTA)
 ifneq ($(filter STABLE BETA,$(AOSPA_BUILDTYPE)),)
 PRODUCT_PACKAGES += ParanoidHub

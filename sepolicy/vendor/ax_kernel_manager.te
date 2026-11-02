@@ -1,0 +1,9 @@
+# Copyright 2025-2026 AxionOS
+# SPDX-License-Identifier: Apache-2.0
+
+allow system_server sysfs:file r_file_perms;
+allow system_server sysfs_devices_system_cpu:file w_file_perms;
+
+# GPU and devfreq controls exposed by the Kernel Manager.
+allow system_server vendor_sysfs_kgsl:file rw_file_perms;
+allow system_server vendor_sysfs_devfreq:file rw_file_perms;
