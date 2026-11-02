@@ -16,6 +16,10 @@ $(call inherit-product, device/oneplus/giulia/device.mk)
 # Inherit from the AOSPA configuration.
 $(call inherit-product, vendor/aospa/target/product/aospa-target.mk)
 
+# Android 17 blocks workloadclassifier's background service start. Remove it
+# after the common device/qcom products have added it.
+PRODUCT_PACKAGES := $(filter-out workloadclassifier,$(PRODUCT_PACKAGES))
+
 PRODUCT_NAME := aospa_giulia
 PRODUCT_DEVICE := giulia
 PRODUCT_MANUFACTURER := OnePlus
