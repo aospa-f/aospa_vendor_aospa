@@ -141,6 +141,7 @@ import com.android.systemui.qs.ax.shared.model.AxMediaSurface
 import com.android.systemui.qs.ax.shared.model.AxQsControl
 import com.android.systemui.qs.ax.shared.model.AxQsGridLayout
 import com.android.systemui.qs.ax.shared.model.AxQsLayout
+import com.android.systemui.qs.ax.domain.AxQsMediaPolicy
 import com.android.systemui.qs.ax.shared.model.AxQsPanelMode
 import com.android.systemui.qs.ax.shared.model.LocalAxQsLayout
 import com.android.systemui.qs.ax.tiles.ringer.LocalRingerSliderViewModel
@@ -830,7 +831,10 @@ constructor(
                             resources.configuration.orientation ==
                                 Configuration.ORIENTATION_LANDSCAPE -> false
                             axQsViewModel.panelMode == AxQsPanelMode.SEPARATE ->
-                                axMediaViewModel.hasVisibleSessions(AxMediaSurface.SEPARATE_QQS)
+                                AxQsMediaPolicy.showSeparateQqsMedia &&
+                                    axMediaViewModel.hasVisibleSessions(
+                                        AxMediaSurface.SEPARATE_QQS
+                                    )
                             else -> axQsViewModel.isInGrid(AxQsControl.MEDIA.id, AxQsLayout.QQS)
                         }
                     collapsedMediaVisibilityChangedListener.value?.accept(qqsMediaVisible)

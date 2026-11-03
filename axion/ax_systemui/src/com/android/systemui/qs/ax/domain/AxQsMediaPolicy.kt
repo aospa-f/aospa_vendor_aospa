@@ -19,6 +19,9 @@ package com.android.systemui.qs.ax.domain
 object AxQsMediaPolicy {
     const val useStockQsMediaHost = false
 
+    /** Separate shade shows media in the QS page only; no card in the notification page. */
+    const val showSeparateQqsMedia = false
+
     fun keyguardShelfOverlapSpace(shelfSpace: Float, mediaVisible: Boolean): Float =
         if (mediaVisible) 0f else shelfSpace
 }

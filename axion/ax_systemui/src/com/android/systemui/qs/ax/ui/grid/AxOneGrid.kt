@@ -97,6 +97,7 @@ import com.android.systemui.qs.ax.shared.model.AxQsGridLayout
 import com.android.systemui.qs.ax.shared.model.AxQsGridSection
 import com.android.systemui.qs.ax.shared.model.AxQsGridValue
 import com.android.systemui.qs.ax.shared.model.AxQsLayout
+import com.android.systemui.qs.ax.domain.AxQsMediaPolicy
 import com.android.systemui.qs.ax.shared.model.AxQsPanelMode
 import com.android.systemui.qs.ax.shared.model.AxQsSpan
 import com.android.systemui.qs.ax.shared.model.AxQsTokens
@@ -459,6 +460,7 @@ internal fun ContentScope.AxOneGrid(
             val separateMediaVisible =
                 separateMode &&
                     !isDirectQs &&
+                    AxQsMediaPolicy.showSeparateQqsMedia &&
                     mediaViewModel.hasVisibleSessions(AxMediaSurface.SEPARATE_QQS)
             val qqsHeightPx =
                 if (!splitShade) {
@@ -509,6 +511,7 @@ internal fun ContentScope.AxOneGrid(
                     val showSeparateMedia =
                         separateMode &&
                             !isDirectQs &&
+                            AxQsMediaPolicy.showSeparateQqsMedia &&
                             mediaViewModel.hasVisibleSessions(AxMediaSurface.SEPARATE_QQS)
                     val isSeparateMediaVisible by remember(showSeparateMedia) {
                         derivedStateOf {
