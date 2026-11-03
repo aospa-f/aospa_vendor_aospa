@@ -394,8 +394,12 @@ constructor(
         }
         val transitionToCookie = remember { mutableMapOf<TransitionState.Transition, Int>() }
 
+        val isLandscape =
+            LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val useSplitLayout = isLandscape || viewModel.isInSplitShade
+
         val isSeparateMode =
-            axQsViewModel.panelMode == AxQsPanelMode.SEPARATE && !viewModel.isInSplitShade
+            axQsViewModel.panelMode == AxQsPanelMode.SEPARATE && !useSplitLayout
 
         val sceneState =
             rememberMutableSceneTransitionLayoutState(
@@ -480,10 +484,8 @@ constructor(
             }
         }
 
-        val isLandscape =
-            LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
         val layout =
-            if (isLandscape || viewModel.isInSplitShade) {
+            if (useSplitLayout) {
                 AxQsLayout.SPLIT_SHADE
             } else {
                 AxQsLayout.QS
@@ -494,7 +496,7 @@ constructor(
         val modularSidePadding =
             AxQuickSettingsLayoutDefaults.modularSidePadding(
                 maxWidth = LocalConfiguration.current.screenWidthDp.dp,
-                landscape = isLandscape || viewModel.isInSplitShade,
+                landscape = useSplitLayout,
                 tileScale = tileScale,
                 columns = columns,
             )
@@ -585,8 +587,13 @@ constructor(
         //        view?.y = -qsMinExpansionHeight.toFloat()
     }
 
+    private fun isLandscape(): Boolean =
+        view?.resources?.configuration?.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    private fun isUsingSplitLayout(): Boolean = viewModel.isInSplitShade || isLandscape()
+
     override fun getQsMinExpansionHeight(): Int {
-        return if (viewModel.isInSplitShade) {
+        return if (isUsingSplitLayout()) {
             getQsMinExpansionHeightForSplitShade()
         } else {
             viewModel.qqsHeight
@@ -644,7 +651,7 @@ constructor(
         if (!panelExpanded) {
             axQsViewModel.clearCollapseGuard()
         }
-        if (!panelExpanded && !viewModel.isInSplitShade) {
+        if (!panelExpanded && !isUsingSplitLayout()) {
             viewModel.resetCollapsedExpansionState()
         }
     }
@@ -653,7 +660,7 @@ constructor(
         viewModel.isQsExpanded = qsExpanded
         if (!qsExpanded) {
             axQsViewModel.clearCollapseGuard()
-            if (!viewModel.isInSplitShade && !viewModel.isPanelExpanded) {
+            if (!isUsingSplitLayout() && !viewModel.isPanelExpanded) {
                 viewModel.resetCollapsedExpansionState()
             }
         }
@@ -878,6 +885,9 @@ constructor(
         onOpenPanelSettings: () -> Unit,
         modifier: Modifier = Modifier,
     ) {
+        val useSplitLayout =
+            LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE ||
+                viewModel.isInSplitShade
         val qsExtraPadding = dimensionResource(R.dimen.qs_panel_padding_top)
         val qsOffsetReduction = dimensionResource(R.dimen.ax_qs_offset_reduction)
         val overlayShadeHeader = useOverlayShadeHeader()
@@ -933,7 +943,7 @@ constructor(
                         remember(viewModel) {
                                 derivedStateOf {
                                     val hasOpeningThreshold =
-                                        viewModel.isInSplitShade ||
+                                        useSplitLayout ||
                                             viewModel.isLargeScreenHeader ||
                                             viewModel.panelExpansionFraction >= 0.02f
                                     (hasOpeningThreshold &&
@@ -961,7 +971,7 @@ constructor(
                                         .sysuiResTag(AxResIdTags.qsScroll)
                             ) {
                                 val sidePadding =
-                                    if (viewModel.isInSplitShade) {
+                                    if (useSplitLayout) {
                                         AxQuickSettingsLayoutDefaults.LandscapeSidePadding
                                     } else {
                                         AxQuickSettingsLayoutDefaults.PortraitSidePadding
@@ -1007,6 +1017,7 @@ constructor(
                             ) {
                                 AxOneGrid(
                                     viewModel = viewModel,
+                                    useSplitLayout = useSplitLayout,
                                     axQsViewModel = axQsViewModel,
                                     mediaViewModel = axMediaViewModel,
                                     detailsViewModel = detailsViewModel,

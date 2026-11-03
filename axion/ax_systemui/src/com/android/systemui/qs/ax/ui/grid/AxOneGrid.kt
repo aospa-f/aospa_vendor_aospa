@@ -130,6 +130,7 @@ private val SeparateModeMedia = AxQsElements.SeparateModeMedia
 internal fun ContentScope.AxOneGrid(
     viewModel: AxQsFragmentComposeViewModel,
     axQsViewModel: AxQsViewModel,
+    useSplitLayout: Boolean,
     mediaViewModel: AxMediaViewModel,
     detailsViewModel: DetailsViewModel,
     listening: () -> Boolean,
@@ -142,7 +143,7 @@ internal fun ContentScope.AxOneGrid(
 ) {
     val tiles = viewModel.containerViewModel.tileGridViewModel.tileViewModels
     val layout = LocalAxQsLayout.current
-    val splitShade = viewModel.isInSplitShade
+    val splitShade = useSplitLayout
     val separateMode = axQsViewModel.panelMode == AxQsPanelMode.SEPARATE && !splitShade
     LaunchedEffect(splitShade) {
         if (splitShade) {
