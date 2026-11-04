@@ -16,6 +16,8 @@
 
 package com.android.axion.axionparts.ui.screens
 
+import android.os.UserHandle
+import android.provider.Settings
 import com.android.internal.kernel.AxKernelControl
 import com.android.internal.kernel.AxKernelManager
 import androidx.compose.foundation.background
@@ -36,9 +38,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.axion.axionparts.R
@@ -52,6 +56,9 @@ import com.android.axion.compose.preferences.rememberSettingInt
 import com.android.axion.compose.preferences.rememberSettingString
 import com.android.axion.compose.preferences.rememberSettingsFlow
 import com.android.axion.compose.scaffold.AxionScaffold
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val CPU_CLUSTER_COUNT_KEY = "ax_cpu_cluster_count"
 private const val CPU_CLUSTER_FREQS_PREFIX = "ax_cpu_cluster_"
@@ -104,13 +111,52 @@ fun KernelManagerScreen(
 private fun KernelManagerContent(modifier: Modifier = Modifier) {
     val flow = rememberSettingsFlow(SettingsType.SECURE)
     val kernelManager = remember { AxKernelManager() }
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     var kernelControls by remember { mutableStateOf<List<AxKernelControl>>(emptyList()) }
-    val refreshKernelControls = {
-        kernelControls = AxKernelManager.getControls()
+    val refreshKernelControls: () -> Unit = {
+        coroutineScope.launch {
+            kernelControls = withContext(Dispatchers.IO) { AxKernelManager.getControls() }
+        }
+        Unit
     }
 
     LaunchedEffect(Unit) {
         refreshKernelControls()
+    }
+
+    // Prefer walt for the CPU governors when the kernel offers it and the user has not picked
+    // a governor yet.
+    LaunchedEffect(kernelControls) {
+        if (kernelControls.isEmpty()) return@LaunchedEffect
+        val resolver = context.contentResolver
+        withContext(Dispatchers.IO) {
+            kernelControls.forEach { control ->
+                if (control.type != AxKernelControl.TYPE_CPU_GOVERNOR) return@forEach
+                val labels = control.valueLabels
+                val waltIndex = labels.indexOfFirst { it.equals("walt", ignoreCase = true) }
+                if (waltIndex < 0) return@forEach
+                val saved =
+                    Settings.Secure.getIntForUser(
+                        resolver,
+                        control.id,
+                        Int.MIN_VALUE,
+                        UserHandle.USER_CURRENT,
+                    )
+                val value = control.availableValues.getOrNull(waltIndex) ?: return@forEach
+                // Respect an explicit non-walt choice, but keep reapplying walt when it was
+                // already the preferred governor and post-boot scripts changed it.
+                if (saved != Int.MIN_VALUE && saved != value) return@forEach
+                if (control.currentValue == value) return@forEach
+                Settings.Secure.putIntForUser(
+                    resolver,
+                    control.id,
+                    value,
+                    UserHandle.USER_CURRENT,
+                )
+                runCatching { AxKernelManager.setControlValue(control.id, value) }
+            }
+        }
     }
 
     val clusterCount by rememberSettingInt(CPU_CLUSTER_COUNT_KEY, SettingsType.SECURE, 0)

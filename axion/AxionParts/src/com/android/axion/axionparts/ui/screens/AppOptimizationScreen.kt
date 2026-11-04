@@ -17,7 +17,6 @@
 package com.android.axion.axionparts.ui.screens
 
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -51,9 +50,11 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -71,11 +72,14 @@ import com.android.axion.compose.preferences.BasePreference
 import com.android.axion.compose.preferences.PreferenceGroup
 import com.android.axion.compose.scaffold.AxionScaffold
 import com.android.internal.dexopt.AxUserDexoptManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class AppOptimizationEntry(
     val packageName: String,
     val label: String,
-    val icon: Drawable?,
+    val icon: ImageBitmap?,
     val state: Int,
 )
 
@@ -90,24 +94,37 @@ fun AppOptimizationScreen(
     val currentIndex = remember { mutableIntStateOf(0) }
     val totalCount = remember { mutableIntStateOf(0) }
     val appEntries = remember { mutableStateListOf<AppOptimizationEntry>() }
+    val coroutineScope = rememberCoroutineScope()
 
     fun refreshAppList(packageNames: List<String>, activePkg: String, state: Int) {
-        val pm = context.packageManager
-        val list = mutableListOf<AppOptimizationEntry>()
-        for (pkg in packageNames) {
-            try {
-                val appInfo = pm.getApplicationInfoAsUser(pkg, 0, 0)
-                val label = pm.getApplicationLabel(appInfo).toString()
-                val icon = pm.getUserBadgedIcon(appInfo.loadUnbadgedIcon(pm), UserHandle.of(0))
-                val entryState = if (state == 2 && pkg == activePkg) 1 else 0
-                list.add(AppOptimizationEntry(pkg, label, icon, entryState))
-            } catch (e: PackageManager.NameNotFoundException) {
-                logError(pkg, e)
-                continue
-            }
+        coroutineScope.launch {
+            val list =
+                withContext(Dispatchers.IO) {
+                    val pm = context.packageManager
+                    val entries = mutableListOf<AppOptimizationEntry>()
+                    for (pkg in packageNames) {
+                        try {
+                            val appInfo = pm.getApplicationInfoAsUser(pkg, 0, 0)
+                            val label = pm.getApplicationLabel(appInfo).toString()
+                            val icon =
+                                pm.getUserBadgedIcon(
+                                        appInfo.loadUnbadgedIcon(pm),
+                                        UserHandle.of(0),
+                                    )
+                                    .toBitmap(96, 96)
+                                    .asImageBitmap()
+                            val entryState = if (state == 2 && pkg == activePkg) 1 else 0
+                            entries.add(AppOptimizationEntry(pkg, label, icon, entryState))
+                        } catch (e: PackageManager.NameNotFoundException) {
+                            logError(pkg, e)
+                            continue
+                        }
+                    }
+                    entries
+                }
+            appEntries.clear()
+            appEntries.addAll(list)
         }
-        appEntries.clear()
-        appEntries.addAll(list)
     }
 
     DisposableEffect(Unit) {
@@ -305,11 +322,8 @@ private fun AppOptimizationContent(
                                 summary = entry.packageName,
                                 customIcon = {
                                     if (entry.icon != null) {
-                                        val bitmap = remember(entry.icon) {
-                                            entry.icon.toBitmap(96, 96).asImageBitmap()
-                                        }
                                         Image(
-                                            bitmap = bitmap,
+                                            bitmap = entry.icon,
                                             contentDescription = null,
                                             modifier = Modifier.size(36.dp).clip(CircleShape),
                                         )

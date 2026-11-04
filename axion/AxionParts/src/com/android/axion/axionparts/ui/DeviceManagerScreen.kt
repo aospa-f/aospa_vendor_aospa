@@ -19,11 +19,13 @@ package com.android.axion.axionparts.ui
 import android.app.Activity
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.android.axion.axionparts.R
 import com.android.axion.axionparts.ui.screens.AppFilterType
@@ -33,6 +35,7 @@ import com.android.axion.axionparts.ui.screens.BackgroundManagerScreen
 import com.android.axion.axionparts.ui.screens.KernelManagerScreen
 import com.android.axion.axionparts.ui.screens.PerformanceScreen
 import com.android.axion.axionparts.ui.screens.RamPlusScreen
+import com.android.axion.compose.navigation.AxRouteAnimatedContent
 
 @Composable
 fun DeviceManagerScreen(initialDetailScreen: String? = null) {
@@ -40,6 +43,7 @@ fun DeviceManagerScreen(initialDetailScreen: String? = null) {
     val context = LocalContext.current
 
     var detailScreen by rememberSaveable { mutableStateOf(initialDetailScreen) }
+    var isForward by rememberSaveable { mutableStateOf(true) }
     var appPickerTitleRes by rememberSaveable { mutableStateOf(R.string.select_apps) }
     var appPickerSelectedApps by rememberSaveable { mutableStateOf<Set<String>>(emptySet()) }
     var appPickerSettingKey by rememberSaveable {
@@ -53,6 +57,7 @@ fun DeviceManagerScreen(initialDetailScreen: String? = null) {
     var appPickerExcludedPackages by rememberSaveable { mutableStateOf<Set<String>>(emptySet()) }
 
     fun closeDetail() {
+        isForward = false
         if (detailScreen == "app_picker") {
             detailScreen = "background_manager"
         } else if (detailScreen != null) {
@@ -78,6 +83,7 @@ fun DeviceManagerScreen(initialDetailScreen: String? = null) {
         appPickerMaxSelectionMessageRes = maxSelectionMessageRes
         appPickerFilterTypeName = filterType.name
         appPickerExcludedPackages = excludedPackages
+        isForward = true
         detailScreen = "app_picker"
     }
 
@@ -85,47 +91,57 @@ fun DeviceManagerScreen(initialDetailScreen: String? = null) {
         BackHandler { closeDetail() }
     }
 
-    when (detailScreen) {
-        null ->
-            PerformanceScreen(
-                onBackClick = { activity?.finish() },
-                onNavigateToDetail = { detailScreen = it },
-            )
-        "app_optimization" -> AppOptimizationScreen(onBackClick = ::closeDetail)
-        "background_manager" ->
-            BackgroundManagerScreen(
-                onBackClick = ::closeDetail,
-                onNavigateToAppPicker = ::navigateToAppPicker,
-            )
-        "kernel_manager" -> KernelManagerScreen(onBackClick = ::closeDetail)
-        "ram_plus" -> RamPlusScreen(onBackClick = ::closeDetail)
-        "app_picker" -> {
-            val maxSelectionMessage =
-                appPickerMaxSelectionMessageRes?.let { resId ->
-                    appPickerMaxSelection?.let { activity?.getString(resId, it) }
-                        ?: activity?.getString(resId)
-                }
-            val filterType =
-                runCatching { AppFilterType.valueOf(appPickerFilterTypeName) }
-                    .getOrDefault(AppFilterType.LAUNCHABLE_USER_ONLY)
-            AppPickerScreen(
-                title = context.getString(appPickerTitleRes),
-                selectedApps = appPickerSelectedApps,
-                onBackClick = ::closeDetail,
-                onAppsSelected = { apps ->
-                    Settings.Secure.putString(
-                        context.contentResolver,
-                        appPickerSettingKey,
-                        apps.joinToString(","),
-                    )
-                    detailScreen = "background_manager"
-                },
-                maxSelection = appPickerMaxSelection,
-                maxSelectionMessage = maxSelectionMessage,
-                filterType = filterType,
-                excludedPackages = appPickerExcludedPackages,
-            )
+    AxRouteAnimatedContent(
+        targetRoute = detailScreen,
+        isForward = isForward,
+        modifier = Modifier.fillMaxSize(),
+    ) { route ->
+        when (route) {
+            null ->
+                PerformanceScreen(
+                    onBackClick = { activity?.finish() },
+                    onNavigateToDetail = {
+                        isForward = true
+                        detailScreen = it
+                    },
+                )
+            "app_optimization" -> AppOptimizationScreen(onBackClick = ::closeDetail)
+            "background_manager" ->
+                BackgroundManagerScreen(
+                    onBackClick = ::closeDetail,
+                    onNavigateToAppPicker = ::navigateToAppPicker,
+                )
+            "kernel_manager" -> KernelManagerScreen(onBackClick = ::closeDetail)
+            "ram_plus" -> RamPlusScreen(onBackClick = ::closeDetail)
+            "app_picker" -> {
+                val maxSelectionMessage =
+                    appPickerMaxSelectionMessageRes?.let { resId ->
+                        appPickerMaxSelection?.let { activity?.getString(resId, it) }
+                            ?: activity?.getString(resId)
+                    }
+                val filterType =
+                    runCatching { AppFilterType.valueOf(appPickerFilterTypeName) }
+                        .getOrDefault(AppFilterType.LAUNCHABLE_USER_ONLY)
+                AppPickerScreen(
+                    title = context.getString(appPickerTitleRes),
+                    selectedApps = appPickerSelectedApps,
+                    onBackClick = ::closeDetail,
+                    onAppsSelected = { apps ->
+                        Settings.Secure.putString(
+                            context.contentResolver,
+                            appPickerSettingKey,
+                            apps.joinToString(","),
+                        )
+                        isForward = false
+                        detailScreen = "background_manager"
+                    },
+                    maxSelection = appPickerMaxSelection,
+                    maxSelectionMessage = maxSelectionMessage,
+                    filterType = filterType,
+                    excludedPackages = appPickerExcludedPackages,
+                )
+            }
+            else -> Unit
         }
-        else -> detailScreen = null
     }
 }
