@@ -158,7 +158,6 @@ public class AxDexoptManagerImpl implements IAxDexoptManager {
                 return;
             }
             mUserStartDexoptServiceWrapper.init(null);
-            showPostOtaNotification(mContext);
         }
     }
 
