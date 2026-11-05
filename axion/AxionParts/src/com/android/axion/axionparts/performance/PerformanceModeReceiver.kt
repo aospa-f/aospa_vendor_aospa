@@ -1,0 +1,57 @@
+/*
+ * Copyright (C) 2026 The AOSPA Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.axion.axionparts.performance
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import java.util.concurrent.Executors
+
+class PerformanceModeReceiver : BroadcastReceiver() {
+    companion object {
+        private val executor = Executors.newSingleThreadExecutor()
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        val action = intent.action ?: return
+        val pendingResult = goAsync()
+
+        executor.execute {
+            try {
+                when (action) {
+                    Intent.ACTION_BOOT_COMPLETED,
+                    Intent.ACTION_MY_PACKAGE_REPLACED -> {
+                        // Never restore performance mode across a reboot or an app update.
+                        PerformanceModeController.disablePerformance(context)
+                    }
+                    Intent.ACTION_BATTERY_LOW -> {
+                        if (PerformanceModeController.isPerformance(context)) {
+                            PerformanceModeController.disablePerformance(context)
+                        }
+                    }
+                    PerformanceModeController.ACTION_AUTO_REVERT -> {
+                        if (PerformanceModeController.isPerformance(context)) {
+                            PerformanceModeController.disablePerformance(context)
+                        }
+                    }
+                }
+            } finally {
+                pendingResult.finish()
+            }
+        }
+    }
+}

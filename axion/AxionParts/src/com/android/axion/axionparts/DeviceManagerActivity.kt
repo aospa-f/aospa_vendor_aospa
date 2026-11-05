@@ -40,6 +40,7 @@ class DeviceManagerActivity : ComponentActivity() {
             ACTION_BACKGROUND_MANAGER -> "background_manager"
             ACTION_KERNEL_MANAGER -> "kernel_manager"
             ACTION_RAM_PLUS -> "ram_plus"
+            ACTION_QS_TILE_PREFERENCES -> "kernel_manager"
             else -> null
         }
 
@@ -62,6 +63,8 @@ class DeviceManagerActivity : ComponentActivity() {
         const val ACTION_KERNEL_MANAGER = "com.android.axion.axionparts.action.KERNEL_MANAGER"
         const val ACTION_RAM_PLUS = "com.android.axion.axionparts.action.RAM_PLUS"
         const val ACTION_APP_OPTIMIZATION =
-            "com.android.axion.axionparts.ACTION_APP_OPTIMIZATION"
+                "com.android.axion.axionparts.ACTION_APP_OPTIMIZATION"
+        const val ACTION_QS_TILE_PREFERENCES =
+                "android.service.quicksettings.action.QS_TILE_PREFERENCES"
     }
 }
