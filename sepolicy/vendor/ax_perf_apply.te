@@ -1,0 +1,12 @@
+# Axion BGMI performance mode - WALT profile applier.
+
+type ax_perf_apply, domain;
+type ax_perf_apply_exec, exec_type, vendor_file_type, file_type;
+
+init_daemon_domain(ax_perf_apply)
+
+# /proc/sys/walt/* scheduling and input boost tunables.
+allow ax_perf_apply proc:file w_file_perms;
+
+# /sys/devices/system/cpu/cpufreq/policy*/walt/hispeed_*.
+allow ax_perf_apply sysfs_devices_system_cpu:file w_file_perms;

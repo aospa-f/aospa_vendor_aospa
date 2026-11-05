@@ -137,7 +137,9 @@ PRODUCT_PACKAGES += \
 # Axion Device Manager
 PRODUCT_PACKAGES += \
     AxionParts \
-    ax_ram_plus_setup
+    ax_ram_plus_setup \
+    init.ax_perf.sh \
+    init.ax_perf.rc
 
 PRODUCT_SYSTEM_EXT_PROPERTIES += \
     persist.sys.ax_rp_supp=true \

@@ -16,12 +16,9 @@
 
 package com.android.axion.axionparts.performance
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.os.SystemClock
+import android.os.SystemProperties
 import android.os.UserHandle
 import android.provider.Settings
 import android.service.quicksettings.TileService
@@ -30,23 +27,24 @@ import com.android.internal.kernel.AxKernelControl
 import com.android.internal.kernel.AxKernelManager
 
 /**
- * Applies the two CPU/GPU-only performance profiles through the Axion kernel manager.
+ * Applies the two performance profiles for BGMI.
  *
- * <p>All writes go through [AxKernelManager.setControlValue] so the persisted values are the
- * same ones the Kernel Manager screen reads and displays. No raw sysfs access is used here.
+ * <p>CPU/GPU limits go through [AxKernelManager.setControlValue] so the persisted values are
+ * the same ones the Kernel Manager screen reads and displays. The root-only WALT and touch
+ * tunables are applied by a vendor init script that watches [SETTING_PROP]; both modes are
+ * covered (performance and balanced) so toggling in either direction restores the other
+ * profile's WALT/touch values.
  */
 object PerformanceModeController {
     private const val TAG = "PerformanceMode"
 
     const val SETTING_MODE = "ax_perf_mode"
-    const val SETTING_START = "ax_perf_mode_start"
+
+    /** Root-only WALT/touch applier trigger, watched by init.ax_perf.rc. */
+    const val SETTING_PROP = "persist.sys.ax_perf_mode"
 
     const val MODE_BALANCED = 0
     const val MODE_PERFORMANCE = 1
-
-    const val AUTO_REVERT_MS = 30L * 60L * 1000L
-    const val ACTION_AUTO_REVERT =
-            "com.android.axion.axionparts.action.PERFORMANCE_AUTO_REVERT"
 
     // CPU frequencies are in kHz, matching AxKernelControl.availableValues.
     private val PERFORMANCE_MIN_TARGETS = intArrayOf(1_100_000, 1_500_000, 1_900_000)
@@ -66,21 +64,7 @@ object PerformanceModeController {
 
     fun isPerformance(context: Context): Boolean = getMode(context) == MODE_PERFORMANCE
 
-    fun remainingAutoRevertMs(context: Context): Long {
-        val start =
-                Settings.Secure.getLongForUser(
-                        context.contentResolver,
-                        SETTING_START,
-                        0L,
-                        UserHandle.USER_CURRENT,
-                )
-        if (start <= 0L) {
-            return AUTO_REVERT_MS
-        }
-        return (start + AUTO_REVERT_MS - SystemClock.elapsedRealtime()).coerceAtLeast(0L)
-    }
-
-    /** Applies the BGMI profile and schedules the safety timeout. */
+    /** Applies the BGMI profile. */
     fun enablePerformance(context: Context): Boolean {
         if (!apply(context, performance = true)) {
             return false
@@ -91,18 +75,12 @@ object PerformanceModeController {
                 MODE_PERFORMANCE,
                 UserHandle.USER_CURRENT,
         )
-        Settings.Secure.putLongForUser(
-                context.contentResolver,
-                SETTING_START,
-                SystemClock.elapsedRealtime(),
-                UserHandle.USER_CURRENT,
-        )
-        scheduleAutoRevert(context)
-        PerformanceModeService.start(context)
+        requestWaltTouchProfile(performance = true)
+        requestTileUpdate(context)
         return true
     }
 
-    /** Restores the balanced defaults and clears all performance state. */
+    /** Restores the balanced profile. */
     fun disablePerformance(context: Context) {
         apply(context, performance = false)
         Settings.Secure.putIntForUser(
@@ -111,14 +89,7 @@ object PerformanceModeController {
                 MODE_BALANCED,
                 UserHandle.USER_CURRENT,
         )
-        Settings.Secure.putLongForUser(
-                context.contentResolver,
-                SETTING_START,
-                0L,
-                UserHandle.USER_CURRENT,
-        )
-        cancelAutoRevert(context)
-        PerformanceModeService.stop(context)
+        requestWaltTouchProfile(performance = false)
         requestTileUpdate(context)
     }
 
@@ -130,6 +101,21 @@ object PerformanceModeController {
             )
         } catch (_: Exception) {
             // SystemUI may not be ready during boot.
+        }
+    }
+
+    /**
+     * Triggers the root WALT/touch applier for the requested mode. CPU/GPU limits above are
+     * already applied by the kernel manager; this covers the tunables the app cannot write.
+     */
+    private fun requestWaltTouchProfile(performance: Boolean) {
+        try {
+            SystemProperties.set(
+                    SETTING_PROP,
+                    if (performance) "1" else "0",
+            )
+        } catch (t: Throwable) {
+            Log.w(TAG, "Unable to set WALT/touch profile property", t)
         }
     }
 
@@ -251,33 +237,6 @@ object PerformanceModeController {
         if (values.isEmpty()) return target
         val sorted = values.sorted()
         return sorted.lastOrNull { it <= target } ?: sorted.first()
-    }
-
-    private fun scheduleAutoRevert(context: Context) {
-        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
-        val remaining = remainingAutoRevertMs(context).coerceAtLeast(1L)
-        alarmManager.setAndAllowWhileIdle(
-                AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + remaining,
-                autoRevertPendingIntent(context),
-        )
-    }
-
-    private fun cancelAutoRevert(context: Context) {
-        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
-        alarmManager.cancel(autoRevertPendingIntent(context))
-    }
-
-    private fun autoRevertPendingIntent(context: Context): PendingIntent {
-        val intent =
-                Intent(context, PerformanceModeReceiver::class.java)
-                        .setAction(ACTION_AUTO_REVERT)
-        return PendingIntent.getBroadcast(
-                context,
-                0,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
     }
 
     private data class CpuCluster(

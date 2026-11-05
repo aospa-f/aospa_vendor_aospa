@@ -1,0 +1,19 @@
+# Axion BGMI performance mode - WALT and touch profile applier.
+
+service ax-perf-apply-on /vendor/bin/init.ax_perf.sh on
+    user root
+    group root
+    oneshot
+    disabled
+
+service ax-perf-apply-off /vendor/bin/init.ax_perf.sh off
+    user root
+    group root
+    oneshot
+    disabled
+
+on property:persist.sys.ax_perf_mode=1
+    start ax-perf-apply-on
+
+on property:persist.sys.ax_perf_mode=0
+    start ax-perf-apply-off

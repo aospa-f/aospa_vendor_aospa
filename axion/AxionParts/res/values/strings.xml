@@ -27,10 +27,6 @@
     <string name="performance_mode">Performance mode</string>
     <string name="performance_mode_balanced">Balanced</string>
     <string name="performance_mode_performance">Performance</string>
-    <string name="performance_mode_active">BGMI performance profile is active</string>
-    <string name="performance_mode_auto_revert">Auto-reverts after 30 min, low battery, or high temperature</string>
-    <string name="performance_mode_channel">Performance mode</string>
-    <string name="performance_mode_channel_desc">Keeps the BGMI performance profile within safe limits</string>
     <string name="performance_mode_failed">Kernel CPU/GPU controls are unavailable</string>
     <string name="ram_plus">RAM Plus</string>
     <string name="ram_plus_summary">Extend available memory with internal storage</string>

@@ -38,16 +38,6 @@ class PerformanceModeReceiver : BroadcastReceiver() {
                         // Never restore performance mode across a reboot or an app update.
                         PerformanceModeController.disablePerformance(context)
                     }
-                    Intent.ACTION_BATTERY_LOW -> {
-                        if (PerformanceModeController.isPerformance(context)) {
-                            PerformanceModeController.disablePerformance(context)
-                        }
-                    }
-                    PerformanceModeController.ACTION_AUTO_REVERT -> {
-                        if (PerformanceModeController.isPerformance(context)) {
-                            PerformanceModeController.disablePerformance(context)
-                        }
-                    }
                 }
             } finally {
                 pendingResult.finish()

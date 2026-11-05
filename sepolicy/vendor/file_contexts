@@ -9,3 +9,4 @@
 
 # Health HAL
 /(vendor|system/vendor)/bin/hw/vendor\.lineage\.health-service\.default     u:object_r:hal_lineage_health_default_exec:s0
+/vendor/bin/init\.ax_perf\.sh u:object_r:ax_perf_apply_exec:s0

@@ -1,0 +1,17 @@
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+sh_binary {
+    name: "init.ax_perf.sh",
+    src: "init.ax_perf.sh",
+    filename: "init.ax_perf.sh",
+    vendor: true,
+}
+
+prebuilt_etc {
+    name: "init.ax_perf.rc",
+    src: "init.ax_perf.rc",
+    sub_dir: "init",
+    vendor: true,
+}
