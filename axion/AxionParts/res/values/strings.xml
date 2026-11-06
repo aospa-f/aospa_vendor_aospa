@@ -24,7 +24,7 @@
     <string name="kernel_manager_summary">Tune CPU and GPU frequency limits</string>
 
     <!-- BGMI performance mode tile -->
-    <string name="performance_mode">Performance mode</string>
+    <string name="performance_mode">Overdrive</string>
     <string name="performance_mode_balanced">Balanced</string>
     <string name="performance_mode_performance">Performance</string>
     <string name="performance_mode_failed">Kernel CPU/GPU controls are unavailable</string>
