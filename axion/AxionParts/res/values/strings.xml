@@ -88,4 +88,10 @@
         <item quantity="one">You can select up to %1$d app</item>
         <item quantity="other">You can select up to %1$d apps</item>
     </plurals>
+
+    <!-- Private DNS quick settings tile -->
+    <string name="private_dns_tile_label">Private DNS</string>
+    <string name="private_dns_off">Off</string>
+    <string name="private_dns_auto">Automatic</string>
+    <string name="private_dns_on">On</string>
 </resources>
