@@ -16,7 +16,10 @@
 
 package com.android.axion.axionparts
 
+import android.content.ComponentName
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.android.axion.axionparts.network.PrivateDnsTileService
 import com.android.axion.axionparts.ui.DeviceManagerScreen
 import com.android.axion.axionparts.ui.theme.AxionPartsTheme
 import com.google.android.material.color.DynamicColors
@@ -32,6 +36,22 @@ class DeviceManagerActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Long-pressing the Private DNS tile must not open the kernel manager.
+        val qsComponent =
+            intent?.getParcelableExtra(Intent.EXTRA_COMPONENT_NAME, ComponentName::class.java)
+        if (
+            intent?.action == ACTION_QS_TILE_PREFERENCES &&
+                qsComponent?.className == PrivateDnsTileService::class.java.name
+        ) {
+            startActivity(
+                Intent(Settings.ACTION_WIRELESS_SETTINGS)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+            finish()
+            return
+        }
+
         DynamicColors.applyToActivityIfAvailable(this)
         enableEdgeToEdge()
 

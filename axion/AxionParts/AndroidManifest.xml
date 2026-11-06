@@ -31,6 +31,15 @@
                 <action android:name="com.android.axion.axionparts.action.KERNEL_MANAGER" />
                 <action android:name="com.android.axion.axionparts.action.RAM_PLUS" />
                 <action android:name="com.android.axion.axionparts.ACTION_APP_OPTIMIZATION" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".QsTilePreferencesActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
