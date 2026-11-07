@@ -25,6 +25,7 @@ import android.service.quicksettings.TileService
 import android.widget.Toast
 import com.android.axion.axionparts.R
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Two-mode BGMI QS tile.
@@ -38,6 +39,8 @@ class PerformanceModeTileService : TileService() {
         private val mainHandler = Handler(Looper.getMainLooper())
     }
 
+    private val applyInFlight = AtomicBoolean(false)
+
     override fun onStartListening() {
         super.onStartListening()
         updateTile()
@@ -50,8 +53,29 @@ class PerformanceModeTileService : TileService() {
 
     override fun onClick() {
         super.onClick()
+        // Drop clicks while a profile is still being applied; the single-thread
+        // executor would otherwise serialize them and re-apply the same profile.
+        if (applyInFlight.getAndSet(true)) {
+            return
+        }
+
+        val enable = !PerformanceModeController.isPerformance(this)
+        // Optimistic flip: reflect the requested state immediately instead of
+        // waiting for every kernel-manager binder call to complete.
+        qsTile?.let { tile ->
+            tile.state = if (enable) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+            tile.subtitle =
+                    getString(
+                            if (enable) {
+                                R.string.performance_mode_performance
+                            } else {
+                                R.string.performance_mode_balanced
+                            }
+                    )
+            tile.updateTile()
+        }
+
         executor.execute {
-            val enable = !PerformanceModeController.isPerformance(this)
             val applied =
                     if (enable) {
                         PerformanceModeController.enablePerformance(this)
@@ -61,6 +85,7 @@ class PerformanceModeTileService : TileService() {
                     }
 
             mainHandler.post {
+                applyInFlight.set(false)
                 if (!applied) {
                     Toast.makeText(
                                     this,
@@ -69,11 +94,8 @@ class PerformanceModeTileService : TileService() {
                             )
                             .show()
                 }
+                // Sync with the real state; reverts the optimistic flip on failure.
                 updateTile()
-                TileService.requestListeningState(
-                        this,
-                        ComponentName(this, PerformanceModeTileService::class.java),
-                )
             }
         }
     }
