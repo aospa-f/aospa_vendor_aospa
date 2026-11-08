@@ -37,7 +37,7 @@ PRODUCT_BUILD_PROP_OVERRIDES += \
     SystemName=CPH2691
 
 # Release-keys production signing (parked for now): uncomment to re-enable
-# PRODUCT_DEFAULT_DEV_CERTIFICATE := vendor/aospa-priv/security/releasekey
+PRODUCT_DEFAULT_DEV_CERTIFICATE := vendor/aospa-priv/security/releasekey
 
 # Boot animation resolution.
 TARGET_BOOT_ANIMATION_RES := 1080
