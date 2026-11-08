@@ -36,7 +36,7 @@ PRODUCT_BUILD_PROP_OVERRIDES += \
     SystemDevice=OP5D3BL1 \
     SystemName=CPH2691
 
-PRODUCT_DEFAULT_DEV_CERTIFICATE := vendor/aospa-priv/security
+PRODUCT_DEFAULT_DEV_CERTIFICATE := vendor/aospa-priv/security/releasekey
 
 # Boot animation resolution.
 TARGET_BOOT_ANIMATION_RES := 1080
